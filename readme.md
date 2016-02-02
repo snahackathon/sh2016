@@ -2,7 +2,7 @@ Run baseline: howto
 ==============
 
 1. install sbt (http://www.scala-sbt.org/)
-2. clone the repository, then it might be opened in Idea 13.x as Scala sbt project.
+2. clone the repository, then it might be opened in Idea 13+ as Scala sbt project.
 The structure of the project is described here http://spark.apache.org/docs/latest/quick-start.html#self-contained-applications.
 `git clone <repo>`
 3. go to the directory where you cloned repository and enter `baseline` dir
