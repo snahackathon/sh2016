@@ -27,7 +27,7 @@ object Baseline {
 
     import sqlc.implicits._
 
-    val DATA_DIR = "/Users/n.pritykovskaya/AIST/"
+    val DATA_DIR = "./"
 
     val GRAPH = DATA_DIR + "trainGraph"
     val REVERSED_GRAPH = DATA_DIR + "trainSubReversedGraph"
