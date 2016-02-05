@@ -208,7 +208,7 @@ object Baseline {
         }
         .filter(t => t._1 % 11 == 7 && t._2._2 >= threshold)
         .groupByKey(NUM_PARTITIONS)
-        .map(t => t._1 -> t._2.take(100).toList.sortBy(-_._2).map(x => x._1))
+        .map(t => t._1 -> t._2.toList.sortBy(-_._2).take(100).map(x => x._1))
         .sortByKey(true, 1)
         .map(t => t._1 + "\t" + t._2.mkString("\t"))
     }
