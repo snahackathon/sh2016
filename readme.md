@@ -3,7 +3,7 @@ Run baseline: howto
 
 1. download data to `$DATA_HOME` 
 2. install sbt (http://www.scala-sbt.org/)
-3. clone the repository, then it might be opened in Idea 13+ as Scala sbt project.
+3. clone the repository, then it might be opened in Idea 13+ as Scala sbt project (look at wiki).
 The structure of the project is described here http://spark.apache.org/docs/latest/quick-start.html#self-contained-applications.
 `git clone <repo>`
 4. go to the directory where you cloned repository and enter `baseline` dir
@@ -16,5 +16,5 @@ The structure of the project is described here http://spark.apache.org/docs/late
 8. unpack spark
 `spark tar -xvzf <spark>.tgz`
 9. send jar you made in step 5 to spark (configuration is given for 4 cores)
-``$SPARK_HOME/bin/spark-submit --class "Baseline" --master local[4] --driver-memory 4G $PROJECT_HOME/baseline/target/scala-2.10/baseline_2.10-1.0.jar $DATA_HOME``
+``$SPARK_HOME/bin/spark-submit --class "Baseline" --master local[4] --driver-memory 4G $PROJECT_HOME/target/scala-2.10/baseline_2.10-1.0.jar $DATA_HOME``
 
