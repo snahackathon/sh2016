@@ -99,7 +99,7 @@ object Baseline {
           .filter(pair => pair.commonFriendsCount > 8)
       }
 
-      commonFriendsCounts.toDF.write.parquet(commonFriendsPath + "/part_" + k)
+      commonFriendsCounts.toDF.repartition(4).write.parquet(commonFriendsPath + "/part_" + k)
     }
 
     // prepare data for training model
