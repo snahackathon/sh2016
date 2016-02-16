@@ -3,7 +3,7 @@ Run baseline: howto
 
 1. download data to `$DATA_HOME` 
 2. install sbt (http://www.scala-sbt.org/)
-3. clone the repository, then it might be opened in Idea 13+ as Scala sbt project (look at wiki).
+3. clone the repository, then it might be opened in Idea 13+ as Scala sbt project (look at [wiki](https://github.com/snahackathon/sh2016/wiki/%D0%9A%D0%B0%D0%BA-%D0%BE%D1%82%D0%BA%D1%80%D1%8B%D1%82%D1%8C-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82-%D0%B2-IntelliJ-IDEA%3F)).
 The structure of the project is described here http://spark.apache.org/docs/latest/quick-start.html#self-contained-applications.
 `git clone <repo>`
 4. go to the directory where you cloned repository and enter `sh2016` dir
