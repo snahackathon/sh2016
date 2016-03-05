@@ -6,7 +6,7 @@
 import breeze.numerics.abs
 import org.apache.hadoop.io.compress.GzipCodec
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.mllib.classification.{LogisticRegressionModel, LogisticRegressionWithLBFGS}
+import org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
@@ -14,6 +14,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
+import scala.Array._
 import scala.collection.mutable.ArrayBuffer
 
 case class PairWithCommonFriends(person1: Int, person2: Int, commonFriendsCount: Int)
@@ -24,13 +25,11 @@ object Baseline {
 
   def main(args: Array[String]) {
 
-    val sparkConf = new SparkConf()
-      .setAppName("Baseline")
+    val sparkConf = new SparkConf().setAppName("Baseline")
     val sc = new SparkContext(sparkConf)
     val sqlc = new SQLContext(sc)
 
     import sqlc.implicits._
-
     val dataDir = if (args.length == 1) args(0) else "./"
 
     val graphPath = dataDir + "trainGraph"
@@ -40,7 +39,7 @@ object Baseline {
     val predictionPath = dataDir + "prediction"
     val modelPath = dataDir + "LogisticRegressionModel"
     val numPartitions = 200
-    val numPartitionsGraph = 107
+    val numPartitionsGraph = 110
 
     // read graph, flat and reverse it
     // step 1.a from description
@@ -81,15 +80,21 @@ object Baseline {
       val pairs = ArrayBuffer.empty[(Int, Int)]
       for (i <- 0 until pplWithCommonFriends.length) {
         if (pplWithCommonFriends(i) % numPartitions == k) {
-          for (j <- i + 1 until pplWithCommonFriends.length) {
-            pairs.append((pplWithCommonFriends(i), pplWithCommonFriends(j)))
+          for (j <- 0 until pplWithCommonFriends.length) {
+            if (i != j) {
+              pairs.append((pplWithCommonFriends(i), pplWithCommonFriends(j)))
+            }
           }
         }
       }
       pairs
     }
 
-    for (k <- 0 until numPartitionsGraph) {
+
+    //val graphParts = 0 +: range(7, numPartitions - 1, 11)
+    val graphParts = 0 +: range(7, 8, 11)
+
+    for (k <- graphParts) {
       val commonFriendsCounts = {
         sqlc.read.parquet(reversedGraphPath)
           .map(t => generatePairs(t.getAs[Seq[Int]](0), numPartitionsGraph, k))
@@ -105,10 +110,13 @@ object Baseline {
     // prepare data for training model
     // step 2
 
+    // хотим ли мы вот тут еще меньше для регрессии?
+
     val commonFriendsCounts = {
       sqlc
-        .read.parquet(commonFriendsPath + "/part_33")
+        .read.parquet(commonFriendsPath + "/part_0")
         .map(t => PairWithCommonFriends(t.getAs[Int](0), t.getAs[Int](1), t.getAs[Int](2)))
+        .sample(false, 0.05)
     }
 
 
@@ -119,7 +127,7 @@ object Baseline {
       graph
         .flatMap(
           userFriends => userFriends.friends
-            .filter(x => (usersBC.value.contains(x) && x > userFriends.user))
+            .filter(x => usersBC.value.contains(x))
             .map(x => (userFriends.user, x) -> 1.0)
         )
     }
@@ -157,7 +165,7 @@ object Baseline {
 
     val data = {
       prepareData(commonFriendsCounts, positives, ageSexBC)
-        .map(t => LabeledPoint(t._2._2.getOrElse(0.0), t._2._1))
+      .map(t => LabeledPoint(t._2._2.getOrElse(0.0), t._2._1))
     }
 
 
@@ -175,7 +183,7 @@ object Baseline {
     }
 
     model.clearThreshold()
-    model.save(sc, modelPath)
+   // model.save(sc, modelPath)
 
     val predictionAndLabels = {
       validation.map { case LabeledPoint(label, features) =>
@@ -211,7 +219,7 @@ object Baseline {
       testData
         .flatMap { case (id, LabeledPoint(label, features)) =>
           val prediction = model.predict(features)
-          Seq(id._1 -> (id._2, prediction), id._2 -> (id._1, prediction))
+          Seq(id._1 -> (id._2, prediction))
         }
         .filter(t => t._1 % 11 == 7 && t._2._2 >= threshold)
         .groupByKey(numPartitions)
