@@ -7,7 +7,6 @@ import breeze.numerics.abs
 import org.apache.hadoop.io.compress.GzipCodec
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS
-import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
@@ -39,7 +38,7 @@ object Baseline {
     val predictionPath = dataDir + "prediction"
     val modelPath = dataDir + "LogisticRegressionModel"
     val numPartitions = 200
-    val numPartitionsGraph = 110
+    val numPartitionsGraph = 1100
 
     // read graph, flat and reverse it
     // step 1.a from description
@@ -173,7 +172,6 @@ object Baseline {
     // step 6
     val splits = data.randomSplit(Array(0.1, 0.9), seed = 11L)
     val training = splits(0).cache()
-    val validation = splits(1)
 
     // run training algorithm to build the model
     val model = {
@@ -183,21 +181,10 @@ object Baseline {
     }
 
     model.clearThreshold()
-   // model.save(sc, modelPath)
-
-    val predictionAndLabels = {
-      validation.map { case LabeledPoint(label, features) =>
-        val prediction = model.predict(features)
-        (prediction, label)
-      }
-    }
 
     // estimate model quality
-    @transient val metricsLogReg = new BinaryClassificationMetrics(predictionAndLabels, 100)
-    val threshold = metricsLogReg.fMeasureByThreshold(2.0).sortBy(-_._2).take(1)(0)._1
 
-    val rocLogReg = metricsLogReg.areaUnderROC()
-    println("model ROC = " + rocLogReg.toString)
+    val threshold = 0
 
     // compute scores on the test set
     // step 7
